@@ -1,215 +1,171 @@
-<html lang="en">
+<!DOCTYPE html>
+<html>
 	<head>
-		  <meta charset="utf-8">
+		<!--Import Google Icon Font-->
+		<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+		<!--Import materialize.css-->
+		<link type="text/css" rel="stylesheet" href="css/materialize.min.css" media="screen,projection" />
 
-		  <title>Calorie Camera Demo</title>
-		  <meta name="description" content="Calorie Camera Demo">
-		  <meta name="author" content="Axel Ali">
-		  <style gf-font-style="'Abel script=all rev=2':400">@font-face {
-			font-family: 'Abel script=all rev=2';
-			font-style: normal;
-			font-weight: 400;
-			src:   url(https://fonts.gstatic.com/l/font?kit=bxgMFWio_H6aBiKtgFQXv431S-SeozXCtSt6F11xXdIythkddbjxiayT3-8IYwKbujm4K-eVZHavHVh839UYnN-PwCzcFZQTeF_I41DH7gz7r2JVGcY1iblqCBWHfGVb0iLboBMlxBFYWGCMnAyBbpcFbpxlqe4UyLfYvnR9wW_3rGVtsTkPsbDajuO5ueQw&skey=bf47258294911e6d&v=v6) format('woff2');
-		  }
-		  </style>
-		  <link rel="stylesheet" href="styles.css">
-
+		<!--Let browser know website is optimized for mobile-->
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	</head>
 
-	<body>
-	  <div id="top">
-		Calorie Counter Demo!
-	  </div>
-	  <div id="mid">
-	  <br/><br/>
-	<?php
-	define("UPLOAD_DIR", "./uploads/");
+	<nav class="purple darken-2">
+		<div class="nav-wrapper">
+			<ul class="left hide-on-med-and-down">
+				<li>
+					<a href="index.html">
+						<i class="material-icons">arrow_back</i>
+					</a>
+				</li>
+			</ul>
+			<a href="#!" class="brand-logo center">Landmark Image Recognition</a>
+		</div>
+	</nav>
 
-	if (!empty($_FILES["myFile"])) {
-		$myFile = $_FILES["myFile"];
+	<body class="grey lighten-4">
+		<div class="container">
+			<div class="row center-align">
+				<div class="col s12">
+					<div class="card-panel">
+						<div>
+						<?php
+							define("UPLOAD_DIR", "./uploads/");
 
-		if ($myFile["error"] !== UPLOAD_ERR_OK) {
-		   echo "An error occurred.";
-			exit;
-		}
+							if (!empty($_FILES["myFile"])) {
+								$myFile = $_FILES["myFile"];
 
-		// ensure a safe filename
-		$name = preg_replace("/[^A-Z0-9._-]/i", "_", $myFile["name"]);
+								if ($myFile["error"] !== UPLOAD_ERR_OK) {
+								echo "An error occurred.";
+									exit;
+								}
 
-		// don't overwrite an existing file
-		$i = 0;
-		$parts = pathinfo($name);
-		while (file_exists(UPLOAD_DIR . $name)) {
-			$i++;
-			$name = $parts["filename"] . "-" . $i . "." . $parts["extension"];
-		}
+								// ensure a safe filename
+								$name = preg_replace("/[^A-Z0-9._-]/i", "_", $myFile["name"]);
 
-		// preserve file from temporary directory
-		$success = move_uploaded_file($myFile["tmp_name"],
-			UPLOAD_DIR . $name);
-		if (!$success) {
-			echo "Unable to save file.";
-			exit;
-		}
-		
-		// set proper permissions on the new file
-		chmod(UPLOAD_DIR . $name, 0644);
-		echo "<img src=". UPLOAD_DIR . $name ." >";
-	}
-	?>
+								// don't overwrite an existing file
+								$i = 0;
+								$parts = pathinfo($name);
+								while (file_exists(UPLOAD_DIR . $name)) {
+									$i++;
+									$name = $parts["filename"] . "-" . $i . "." . $parts["extension"];
+								}
 
-	  </div>
-	  <div id="bot">
+								// preserve file from temporary directory
+								$success = move_uploaded_file($myFile["tmp_name"],
+									UPLOAD_DIR . $name);
+								if (!$success) {
+									echo "Unable to save file.";
+									exit;
+								}
+								
+								// set proper permissions on the new file
+								chmod(UPLOAD_DIR . $name, 0644);
+								echo "<img src=". UPLOAD_DIR . $name ." height='50%' width='50%' >";
+							}
+						?>
+						</div>
+						<?php
+							$output = shell_exec ( "python ./tensorflow/label_image.py  ./". UPLOAD_DIR . $name );
+							$results = explode("|",$output);
 
-	  <?php
-		$output = shell_exec ( "python ./tensorflow/label_image.py  ./". UPLOAD_DIR . $name );
-		echo "Result: ".$output;
-		$firstresult = explode("(",$output);
-		$FOOD = $firstresult[0];
-		
-		 ?>
-		<table class="table">
+							function percent($number){
+								return $number * 100 . '%';
+							}
+						?>
+					</div>
+				</div>
+			</div>
 
-	<caption>
-	<?php echo strtoupper($FOOD);
-	?>
-	</caption>
-			<caption>Nutrition Facts </caption>
-		  <caption>
-			<?php
-			switch ($FOOD) {
-			case "uncooked egg":
-			  echo "Serving Size: 1 oz";
-			  break;
-			case "nasi lemak":
-			  echo "Serving Size a cup (91g)";
-			  break;
-			case "apple":
-			  echo "Serving Size of Medium sized(3''  dia - 182g) ";
-			  break;
-			case "cendol":
-			  echo "Serving Size of 2 Tablespoons (14g)  ";
-			  break;
-			  case "burger":
-				  echo "Serving Size of  1 Bottle 20 fl oz (600ml) ";
-				  break;
-				  default:
-					echo "We coulnt find: "."*".$FOOD."*";
+			<!-- Results -->
+			<div class="row">
+				<div class="col s12">
+					<div class="card-panel">
+						<table class="striped">
+							<thead>
+								<tr>
+									<th class="center">LANDMARK</th>
+									<th class="center">ACCURACY</th>
+								</tr>
+							</thead>
+							<tbody>
+								<?php
+									$index = 0;
+									$accuracy = 0;
+									foreach($results as $res){
+										$value = explode("=", $res);
+										if(isset($value[1])){
+											if($index == 0){
+												echo '<tr class="yellow lighten-3">';											
+												echo '<td class="center">'.strtoupper($value[0]).'</td>';
+												echo '<td class="center">'.percent($value[1]).'</td>';
+												echo '</tr>';
+												$index++;
+											}
+										}
+									}
+								?>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+
+			<!-- map -->
+			<div class="row">
+				<div class="col s12">
+					<div class="card-panel">
+						<iframe
+						width="100%"
+						height="450"
+						frameborder="0" style="border:0"
+						src="https://www.google.com/maps/embed/v1/place?key=AIzaSyB9lVfS1xItP_31cA3pvjm30dmuiUJtijk&q=<?php echo explode("=", $results[0])[0]; ?>" allowfullscreen>
+						</iframe>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!--JavaScript at end of body for optimized loading-->
+		<script type="text/javascript" src="js/materialize.min.js"></script>
+		<script type="text/javascript" src="js/jquery.min.js"></script>
+		<!-- <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_KEY&callback=myMap"></script> -->
+
+		<script>
+			$('#myFile').change(function () {
+				readURL(this);
+			});
+
+			function submit() {
+				if ($('#myFile').val() === '') {
+					M.toast({
+						html: 'Please upload an image!',
+						classes: 'red'
+					});
+				} else {
+					$('#uploadForm').submit();
+				}
 			}
-			   ?>
-	</caption>
-			<thead>
-			<tr>
-				<th><br></th>
-				<th>Amount</th>
-			</tr>
-			</thead>
-			<tbody>
-			<tr>
-				<td>Calories</td>
-				<td><?php
-			switch ($FOOD) {
-			case "uncooked egg":
-			  echo "14.6 Kcal";
-			  break;
-			case "nasi lemak":
-			  echo "182 Kcal";
-			  break;
-			case "apple":
-			  echo "94.64 Kcal";
-			  break;
-			case "cendol":
-			  echo "50 Kcal";
-			  break;
-			  case "burger":
-				  echo "120 Kcal";
-				  break;
-				  default:
-					echo "We coulnt find";
+			function readURL(input) {
+
+				if (input.files && input.files[0]) {
+					var reader = new FileReader();
+
+					reader.onload = function (e) {
+						$('#imagePreview').attr('src', e.target.result);
+					}
+
+					reader.readAsDataURL(input.files[0]);
+				}
 			}
-			   ?></td>
-			</tr>
-			<tr>
-				<td>Fats</td>
-				<td><?php
-			switch ($FOOD) {
-			case "uncooked egg":
-			  echo "0g";
-			  break;
-			case "nasi lemak":
-			  echo "9.1g";
-			  break;
-			case "apple":
-			  echo "0.3g";
-			  break;
-			case "cendol":
-			  echo "0.5g";
-			  break;
-			  case "burger":
-				  echo "0g";
-				  break;
-				  default:
-					echo "We coulnt find";
+			
+			function myMap() {
+				var mapProp= {
+					center:new google.maps.LatLng(51.508742,-0.120850),
+					zoom:5,
+				};
+				var map=new google.maps.Map(document.getElementById("googleMap"),mapProp);
 			}
-			   ?></td>
-			</tr>
-			<tr>
-				<td>Sodium</td>
-				<td><?php
-			switch ($FOOD) {
-			case "uncooked egg":
-			  echo "0.0 mg";
-			  break;
-			case "nasi lemak":
-			  echo "971 mg";
-			  break;
-			case "apple":
-			  echo "1.82 mg";
-			  break;
-			case "cendol":
-			  echo "35 mg";
-			  break;
-			  case "burger":
-				  echo "0 mg";
-				  break;
-				  default:
-					echo "We coulnt find";
-			}
-			   ?></td>
-			</tr>
-			<tr>
-				<td>Protein</td>
-				<td><?php
-			switch ($FOOD) {
-			case "uncooked egg":
-			  echo "0.1g";
-			  break;
-			case "nasi lemak":
-			  echo "21.2g";
-			  break;
-			case "apple":
-			  echo "0.5g";
-			  break;
-			case "cendol":
-			  echo "<1g";
-			  break;
-			  case "burger":
-				  echo "0g";
-				  break;
-				  default:
-					echo "We coulnt find";
-			}
-			   ?></td>
-			</tr>
-			</tbody>
-		</table>
-	Made By Axel Ali , <a href="https://github.com/AxelAli/"> My Github!</a>
-	<br>All Values Are Figurative.
-	<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
-		<input type="hidden" name="cmd" value="_s-xclick">
-		<input type="hidden" name="hosted_button_id" value="X7T9H7G2ZAKZJ">
-		<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
-		<img alt="" border="0" src="https://www.paypalobjects.com/es_XC/i/scr/pixel.gif" width="1" height="1">
-	</form>
-	</div>
+		</script>
+	</body>
 </html>
